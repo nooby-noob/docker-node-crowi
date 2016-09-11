@@ -1,0 +1,38 @@
+version: '2'
+
+services:
+    crowi:
+        image: noobynoob/docker-node-crowi:v1.5.0
+        links:
+            - mongo:mogo
+            - redis:redis
+            - elasticsearch:elasticsearch
+        ports:
+            - 80:80
+
+    mongo:
+        image: mongo
+
+    redis:
+        image: redis:alpine
+    
+    # user: について
+    #   commandを指定するとelasticsearchのdocker-entrypoint.shで
+    #   user権限切り替えのスクリプトがうまく実行されずrootユーザーのままになる。
+    #   root権限ではelasticsearchを実行できないのでuser: elasticsearchを指定する。
+    #
+    # command: について
+    #   crowiの全文検索に必要なanalysis-kuromojiのインストールと、
+    #   あると便利そうなウェブコンソールelasticsearch-headのインストールをしてから
+    #   elasticsearchを実行
+    elasticsearch:
+        image: elasticsearch
+        user: elasticsearch
+        ports:
+            - 9200:9200
+        command:
+            - "sh"
+            - "-c"
+            - "./bin/plugin install analysis-kuromoji; 
+               ./bin/plugin install mobz/elasticsearch-head;
+               elasticsearch;"
